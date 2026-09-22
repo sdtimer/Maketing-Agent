@@ -33,7 +33,7 @@ INSERT INTO system_menu (
 ) VALUES
   (3000, '租户端', '', 1, 1, 0, '/tenant', 'ep:office-building', NULL, NULL, 0, b'0', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3001, '工作台', 'marketing:tenant:home:query', 2, 1, 3000, 'home', 'ep:home-filled', 'shell/ShellPage', 'TenantHome', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
-  (3002, '组织与业务资产', 'marketing:tenant:assets:query', 2, 2, 3000, 'assets', 'ep:box', 'shell/ShellPage', 'TenantAssets', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3002, '组织与业务资产', 'marketing:tenant:assets:query', 2, 2, 3000, 'assets', 'ep:box', 'shell/TenantAssets', 'TenantAssets', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3003, '爆款素材库', '', 1, 3, 3000, 'catalog', 'ep:collection', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3004, '国内渠道', 'marketing:tenant:catalog:query', 2, 1, 3003, 'domestic', 'ep:chat-dot-round', 'shell/TenantCatalog', 'TenantDomestic', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3005, '出海渠道', 'marketing:tenant:catalog:query', 2, 2, 3003, 'overseas', 'ep:ship', 'shell/TenantCatalog', 'TenantOverseas', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
@@ -56,6 +56,7 @@ INSERT INTO system_menu (
   (3033, '内容终审', 'marketing:tenant:content:review', 3, 2, 3009, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3034, '复制终审内容', 'marketing:tenant:content:copy', 3, 3, 3009, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3035, '导出终审内容', 'marketing:tenant:content:export', 3, 4, 3009, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3036, '维护业务资产', 'marketing:tenant:assets:update', 3, 2, 3002, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3100, '平台端', '', 1, 2, 0, '/admin', 'ep:monitor', NULL, NULL, 0, b'0', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3101, '平台工作台', 'marketing:admin:home:query', 2, 1, 3100, 'home', 'ep:home-filled', 'shell/ShellPage', 'AdminHome', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3102, '收录工作台', 'marketing:admin:ingest:query', 2, 2, 3100, 'ingest', 'ep:upload', 'shell/AdminIngest', 'AdminIngest', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
@@ -75,10 +76,10 @@ INSERT INTO system_menu (
   (3128, '公共提示词查询', 'marketing:admin:prompt:query', 3, 1, 3108, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0');
 
 INSERT INTO system_role_menu (role_id, menu_id, creator, create_time, updater, update_time, deleted, tenant_id)
-SELECT 2001, id, '1', NOW(), '1', NOW(), b'0', 1001 FROM system_menu WHERE id BETWEEN 3000 AND 3035;
+SELECT 2001, id, '1', NOW(), '1', NOW(), b'0', 1001 FROM system_menu WHERE id BETWEEN 3000 AND 3036;
 
 INSERT INTO system_role_menu (role_id, menu_id, creator, create_time, updater, update_time, deleted, tenant_id)
-SELECT 2002, id, '1', NOW(), '1', NOW(), b'0', 1002 FROM system_menu WHERE id BETWEEN 3000 AND 3035;
+SELECT 2002, id, '1', NOW(), '1', NOW(), b'0', 1002 FROM system_menu WHERE id BETWEEN 3000 AND 3036;
 
 INSERT INTO system_menu (
   id, name, permission, type, sort, parent_id, path, icon, component, component_name,

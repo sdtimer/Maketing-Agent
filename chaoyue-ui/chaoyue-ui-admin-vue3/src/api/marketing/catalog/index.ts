@@ -1,4 +1,5 @@
 import request from '@/config/axios'
+import { marketingAppUrl } from '@/api/marketing/app'
 
 export interface PublishedEntry {
   entryId: number
@@ -15,10 +16,8 @@ export interface PublishedBatch {
   disclaimer: string
 }
 
-export const getPublishedCatalog = (market: string, channel: string) => {
-  const base = import.meta.env.VITE_BASE_URL as string
-  return request.get<PublishedBatch[]>({
-    url: `${base}/app-api/marketing/catalog/published`,
+export const getPublishedCatalog = (market: string, channel: string) =>
+  request.get<PublishedBatch[]>({
+    url: marketingAppUrl('/catalog/published'),
     params: { market, channel }
   })
-}

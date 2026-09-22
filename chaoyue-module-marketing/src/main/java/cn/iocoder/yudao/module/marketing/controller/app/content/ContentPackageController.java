@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ChannelPackageDO
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentVersionDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.CreationTaskDO;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ChannelPackageMapper;
+import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentVersionMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.CreationTaskMapper;
 import cn.iocoder.yudao.module.marketing.service.content.ContentDeliveryService;
 import cn.iocoder.yudao.module.marketing.service.content.ContentReviewService;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.module.marketing.enums.ErrorCodeConstants.MARKETING_CONTENT_PACKAGE_NOT_FOUND;
 
 @RestController
 @RequestMapping("/marketing/content-package")
@@ -31,11 +34,36 @@ public class ContentPackageController {
     @Resource private ContentDeliveryService deliveryService;
     @Resource private CreationTaskMapper creationTaskMapper;
     @Resource private ChannelPackageMapper packageMapper;
+    @Resource private ContentVersionMapper versionMapper;
 
     @GetMapping("/list")
     @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
     public CommonResult<List<ChannelPackageDO>> list() {
         return success(packageMapper.selectList());
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
+    public CommonResult<ContentPackageDetailRespVO> get(@PathVariable Long id) {
+        ChannelPackageDO contentPackage = packageMapper.selectById(id);
+        if (contentPackage == null) {
+            throw exception(MARKETING_CONTENT_PACKAGE_NOT_FOUND);
+        }
+        ContentPackageDetailRespVO respVO = new ContentPackageDetailRespVO();
+        respVO.setId(contentPackage.getId());
+        respVO.setTaskId(contentPackage.getTaskId());
+        respVO.setChannel(contentPackage.getChannel());
+        respVO.setStatus(contentPackage.getStatus());
+        respVO.setCurrentVersionId(contentPackage.getCurrentVersionId());
+        if (contentPackage.getCurrentVersionId() != null) {
+            ContentVersionDO version = versionMapper.selectById(contentPackage.getCurrentVersionId());
+            if (version != null) {
+                respVO.setCurrentVersion(version.getVersion());
+                respVO.setContentHash(version.getContentHash());
+                respVO.setContent(version.getContent());
+            }
+        }
+        return success(respVO);
     }
 
     @PostMapping
@@ -78,10 +106,10 @@ public class ContentPackageController {
         return success(respVO);
     }
 
-    @PostMapping(value = "/{id}/export/html", produces = "text/html;charset=UTF-8")
+    @PostMapping("/{id}/export/html")
     @PreAuthorize("@ss.hasPermission('marketing:tenant:content:export')")
-    public String exportHtml(@PathVariable Long id) {
-        return deliveryService.exportApprovedHtml(id);
+    public CommonResult<String> exportHtml(@PathVariable Long id) {
+        return success(deliveryService.exportApprovedHtml(id));
     }
 
     @PostMapping("/{id}/approve")
