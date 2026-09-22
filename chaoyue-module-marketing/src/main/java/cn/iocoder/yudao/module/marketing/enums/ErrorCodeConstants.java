@@ -1,0 +1,20 @@
+package cn.iocoder.yudao.module.marketing.enums;
+
+import cn.iocoder.yudao.framework.common.exception.ErrorCode;
+
+/**
+ * marketing 错误码。分段见详细设计 00 §7：
+ * 1-020-010 ingestion｜020 curation｜030 creation｜040 review/gate｜050 layout/export｜060 prompt｜070 localization｜080 usage/credential
+ */
+public interface ErrorCodeConstants {
+
+    ErrorCode MARKETING_PING_UNAUTHORIZED = new ErrorCode(1_020_000_000, "未登录，无法探测营销身份");
+
+    ErrorCode MARKETING_INGESTION_IDEMPOTENCY_CONFLICT = new ErrorCode(1_020_010_001,
+            "幂等键已用于不同的收录请求，请更换幂等键后重试");
+    ErrorCode MARKETING_INGESTION_NOT_FOUND = new ErrorCode(1_020_010_002, "收录任务不存在");
+    ErrorCode MARKETING_INGESTION_VERSION_CONFLICT = new ErrorCode(1_020_010_003, "草稿已被其他人修改，请刷新后重试");
+    ErrorCode MARKETING_INGESTION_STATUS_INVALID = new ErrorCode(1_020_010_004, "当前任务状态不支持该操作");
+    ErrorCode MARKETING_INGESTION_REQUIRED_FIELD_MISSING = new ErrorCode(1_020_010_005, "请补齐账号唯一标识或内容唯一定位后再提交审核");
+    ErrorCode MARKETING_REVIEW_SELF_FORBIDDEN = new ErrorCode(1_020_040_001, "创建人不能审核自己的收录任务");
+}

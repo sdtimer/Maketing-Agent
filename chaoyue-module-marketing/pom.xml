@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.chaoyue</groupId>
+        <artifactId>chaoyue</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>chaoyue-module-marketing</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>智造营销业务模块（广东超悦科技有限公司）。P0 先提供身份探测，业务表在 M1 起落地。</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.chaoyue</groupId>
+            <artifactId>chaoyue-spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chaoyue</groupId>
+            <artifactId>chaoyue-spring-boot-starter-biz-tenant</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chaoyue</groupId>
+            <artifactId>chaoyue-spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chaoyue</groupId>
+            <artifactId>chaoyue-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chaoyue</groupId>
+            <artifactId>chaoyue-spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
