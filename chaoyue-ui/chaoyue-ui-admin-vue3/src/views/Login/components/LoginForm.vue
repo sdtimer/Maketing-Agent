@@ -183,7 +183,8 @@ const LoginRules = {
 }
 const loginData = reactive({
   isShowPassword: false,
-  captchaEnable: import.meta.env.VITE_APP_CAPTCHA_ENABLE,
+  // 未配置时关闭验证码，避免按钮调用未渲染的 Verify 组件。
+  captchaEnable: import.meta.env.VITE_APP_CAPTCHA_ENABLE || 'false',
   tenantEnable: import.meta.env.VITE_APP_TENANT_ENABLE,
   loginForm: {
     tenantName: import.meta.env.VITE_APP_DEFAULT_LOGIN_TENANT || '',
