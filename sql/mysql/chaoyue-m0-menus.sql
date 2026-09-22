@@ -62,7 +62,7 @@ INSERT INTO system_menu (
   (3103, '精品对标对象', 'marketing:admin:account:query', 2, 3, 3100, 'accounts', 'ep:user', 'shell/ShellPage', 'AdminAccounts', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3104, '内容精选清单', 'marketing:admin:sample:query', 2, 4, 3100, 'samples', 'ep:list', 'shell/ShellPage', 'AdminSamples', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3105, '精选批次与排序', 'marketing:admin:batch:query', 2, 5, 3100, 'batches', 'ep:sort', 'shell/ShellPage', 'AdminBatches', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
-  (3106, '数据审核与发布', 'marketing:admin:review:query', 2, 6, 3100, 'review', 'ep:circle-check', 'shell/ShellPage', 'AdminReview', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3106, '数据审核与发布', 'marketing:admin:review:query', 2, 6, 3100, 'review', 'ep:circle-check', 'shell/AdminReview', 'AdminReview', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3107, '行业 / 主题 / 市场', 'marketing:admin:taxonomy:query', 2, 7, 3100, 'taxonomy', 'ep:collection-tag', 'shell/ShellPage', 'AdminTaxonomy', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3108, '公共提示词与教程', 'marketing:admin:prompt:query', 2, 8, 3100, 'prompts', 'ep:edit-pen', 'shell/ShellPage', 'AdminPrompts', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3121, '平台工作台查询', 'marketing:admin:home:query', 3, 1, 3101, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),

@@ -15,5 +15,7 @@ public class IngestionTaskPageRespVO {
     private String channel;
     private String status;
     private Integer attempt;
+    /** 当前草稿乐观锁版本；审核必须显式绑定该版本。 */
+    private Integer version;
     private LocalDateTime createTime;
 }

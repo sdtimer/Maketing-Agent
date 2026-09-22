@@ -46,6 +46,7 @@ export interface IngestionTaskPageItem {
   channel: string
   status: string
   attempt: number
+  version: number
   createTime: string
 }
 
@@ -72,3 +73,7 @@ export const getIngestionDraft = (id: number) => request.get<IngestionDraftVO>({
 export const updateIngestionDraft = (id: number, data: { expectedVersionId: number; fields: Record<string, any> }) =>
   request.put<IngestionDraftVO>({ url: `/marketing/ingestion/${id}/draft`, data })
 export const submitIngestionReview = (id: number) => request.post<boolean>({ url: `/marketing/ingestion/${id}/submit-review` })
+export const approvePlatformReview = (id: number, expectedVersionId: number) =>
+  request.post<boolean>({ url: `/marketing/platform/review/${id}/approve`, data: { expectedVersionId } })
+export const rejectPlatformReview = (id: number, expectedVersionId: number, reasonCode: string, comment: string) =>
+  request.post<boolean>({ url: `/marketing/platform/review/${id}/reject`, data: { expectedVersionId, reasonCode, comment } })
