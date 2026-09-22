@@ -3,7 +3,8 @@
 const PLATFORM_USERS = new Set(['admin', 'platform'])
 
 export function isPlatformUser(username?: string, roles: string[] = []) {
-  return PLATFORM_USERS.has(username || '') || roles.includes('platform_ops')
+  // admin 的平台权限来自 super_admin；以角色为准可避免用户信息缓存尚未刷新时误跳 403。
+  return PLATFORM_USERS.has(username || '') || roles.includes('platform_ops') || roles.includes('super_admin')
 }
 
 export function isSystemAdmin(username?: string) {
