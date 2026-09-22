@@ -3,10 +3,13 @@ package cn.iocoder.yudao.module.marketing.controller.app.content;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.tenant.core.context.TenantContextHolder;
 import cn.iocoder.yudao.module.marketing.controller.app.content.vo.*;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ChannelPackageDO;
+import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentReviewDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentVersionDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.CreationTaskDO;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ChannelPackageMapper;
+import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentReviewMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentVersionMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.CreationTaskMapper;
 import cn.iocoder.yudao.module.marketing.service.content.ContentDeliveryService;
@@ -35,6 +38,7 @@ public class ContentPackageController {
     @Resource private CreationTaskMapper creationTaskMapper;
     @Resource private ChannelPackageMapper packageMapper;
     @Resource private ContentVersionMapper versionMapper;
+    @Resource private ContentReviewMapper reviewMapper;
 
     @GetMapping("/list")
     @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
@@ -45,10 +49,7 @@ public class ContentPackageController {
     @GetMapping("/{id}")
     @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
     public CommonResult<ContentPackageDetailRespVO> get(@PathVariable Long id) {
-        ChannelPackageDO contentPackage = packageMapper.selectById(id);
-        if (contentPackage == null) {
-            throw exception(MARKETING_CONTENT_PACKAGE_NOT_FOUND);
-        }
+        ChannelPackageDO contentPackage = requirePackage(id);
         ContentPackageDetailRespVO respVO = new ContentPackageDetailRespVO();
         respVO.setId(contentPackage.getId());
         respVO.setTaskId(contentPackage.getTaskId());
@@ -95,6 +96,43 @@ public class ContentPackageController {
         return success(toVersionResp(versionService.saveNewVersion(id, reqVO.getContent())));
     }
 
+    @GetMapping("/{id}/versions")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
+    public CommonResult<List<ContentVersionItemRespVO>> versions(@PathVariable Long id) {
+        ChannelPackageDO contentPackage = requirePackage(id);
+        return success(versionMapper.selectList(new LambdaQueryWrapperX<ContentVersionDO>()
+                        .eq(ContentVersionDO::getPackageId, id)
+                        .orderByDesc(ContentVersionDO::getVersion))
+                .stream().map(version -> {
+                    ContentVersionItemRespVO item = new ContentVersionItemRespVO();
+                    item.setId(version.getId());
+                    item.setVersion(version.getVersion());
+                    item.setContentHash(version.getContentHash());
+                    item.setCreateTime(version.getCreateTime());
+                    item.setCurrent(version.getId().equals(contentPackage.getCurrentVersionId()));
+                    return item;
+                }).toList());
+    }
+
+    @GetMapping("/{id}/reviews")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
+    public CommonResult<List<ContentReviewRecordRespVO>> reviews(@PathVariable Long id) {
+        requirePackage(id);
+        return success(reviewMapper.selectList(new LambdaQueryWrapperX<ContentReviewDO>()
+                        .eq(ContentReviewDO::getPackageId, id)
+                        .orderByDesc(ContentReviewDO::getId))
+                .stream().map(record -> {
+                    ContentReviewRecordRespVO item = new ContentReviewRecordRespVO();
+                    item.setId(record.getId());
+                    item.setContentVersionId(record.getContentVersionId());
+                    item.setDecision(record.getDecision());
+                    item.setComment(record.getComment());
+                    item.setReviewerId(record.getReviewerId());
+                    item.setCreateTime(record.getCreateTime());
+                    return item;
+                }).toList());
+    }
+
     @PostMapping("/{id}/copy")
     @PreAuthorize("@ss.hasPermission('marketing:tenant:content:copy')")
     public CommonResult<ContentCopyRespVO> copy(@PathVariable Long id) {
@@ -124,6 +162,14 @@ public class ContentPackageController {
     public CommonResult<Boolean> reject(@PathVariable Long id, @Valid @RequestBody ContentReviewRejectReqVO reqVO) {
         reviewService.reject(id, reqVO.getVersionId(), reqVO.getComment());
         return success(true);
+    }
+
+    private ChannelPackageDO requirePackage(Long id) {
+        ChannelPackageDO contentPackage = packageMapper.selectById(id);
+        if (contentPackage == null) {
+            throw exception(MARKETING_CONTENT_PACKAGE_NOT_FOUND);
+        }
+        return contentPackage;
     }
 
     private static ContentVersionSaveRespVO toVersionResp(ContentVersionDO version) {

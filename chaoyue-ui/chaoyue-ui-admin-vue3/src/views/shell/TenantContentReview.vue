@@ -29,6 +29,8 @@
             <el-button text type="danger" :disabled="s.row.status !== 'pending_review'" @click="openReject(s.row)">打回</el-button>
             <el-button text :disabled="s.row.status !== 'approved'" @click="copy(s.row.id)">复制</el-button>
             <el-button text :disabled="s.row.status !== 'approved'" @click="exportHtml(s.row.id)">导出 HTML</el-button>
+            <el-button text @click="openVersions(s.row.id)">版本</el-button>
+            <el-button text @click="openReviews(s.row.id)">审核记录</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -45,8 +47,29 @@
       </template>
     </el-dialog>
     <el-dialog v-model="copyVisible" title="复制终审正文" width="640px">
-      <p class="meta">版本 {{ copied?.contentVersionId }} · {{ copied?.contentHash }}</p>
+      <el-alert type="success" :closable="false" show-icon title="本次复制已绑定不可变版本与哈希" />
+      <p class="meta">contentVersionId={{ copied?.contentVersionId }}</p>
+      <p class="hash">{{ copied?.contentHash }}</p>
       <el-input :model-value="copied?.content" type="textarea" :rows="12" readonly />
+    </el-dialog>
+    <el-dialog v-model="versionVisible" title="正文版本" width="720px">
+      <el-table :data="versions" empty-text="暂无版本">
+        <el-table-column prop="version" label="版本" width="80" />
+        <el-table-column prop="id" label="versionId" width="100" />
+        <el-table-column prop="contentHash" label="contentHash" min-width="240" />
+        <el-table-column prop="createTime" label="时间" width="180" />
+        <el-table-column label="当前" width="80">
+          <template #default="s"><el-tag v-if="s.row.current" type="success">当前</el-tag></template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+    <el-dialog v-model="reviewVisible" title="内容审核记录" width="720px">
+      <el-table :data="reviews" empty-text="暂无审核记录">
+        <el-table-column prop="decision" label="结论" width="100" />
+        <el-table-column prop="contentVersionId" label="版本 ID" width="100" />
+        <el-table-column prop="comment" label="说明" />
+        <el-table-column prop="createTime" label="时间" width="180" />
+      </el-table>
     </el-dialog>
   </section>
 </template>
@@ -59,8 +82,12 @@ import {
   exportContentPackageHtml,
   getContentGate,
   getContentPackageList,
+  getContentReviews,
+  getContentVersions,
   rejectContentPackage,
-  type ContentPackage
+  type ContentPackage,
+  type ContentReviewRecord,
+  type ContentVersionItem
 } from '@/api/marketing/content'
 
 defineOptions({ name: 'TenantContentReview' })
@@ -73,6 +100,10 @@ const copyVisible = ref(false)
 const rejectComment = ref('')
 const selected = ref<ContentPackage>()
 const copied = ref<{ contentVersionId: number; contentHash: string; content: string }>()
+const versionVisible = ref(false)
+const reviewVisible = ref(false)
+const versions = ref<ContentVersionItem[]>([])
+const reviews = ref<ContentReviewRecord[]>([])
 
 const load = async () => {
   loading.value = true
@@ -126,8 +157,23 @@ const copy = async (id: number) => {
     ElMessage.warning(gate.reason || '当前不可复制')
     return
   }
-  copied.value = await copyContentPackage(id)
+  const copiedContent = await copyContentPackage(id)
+  if (gate.contentHash && copiedContent.contentHash !== gate.contentHash) {
+    ElMessage.error('复制结果与闸门哈希不一致，已拒绝展示')
+    return
+  }
+  copied.value = copiedContent
   copyVisible.value = true
+}
+
+const openVersions = async (id: number) => {
+  versions.value = await getContentVersions(id)
+  versionVisible.value = true
+}
+
+const openReviews = async (id: number) => {
+  reviews.value = await getContentReviews(id)
+  reviewVisible.value = true
 }
 
 const exportHtml = async (id: number) => {
@@ -165,9 +211,15 @@ onMounted(load)
   font-size: 22px;
 }
 .review-page p,
-.meta {
-  margin: 0 0 12px;
+.meta,
+.hash {
+  margin: 12px 0;
   color: #6b7280;
+  word-break: break-all;
+}
+.hash {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
 }
 .table-card {
   margin-top: 18px;

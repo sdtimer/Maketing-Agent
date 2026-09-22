@@ -21,6 +21,25 @@ export interface GateResult {
   canCopy: boolean
   canExport: boolean
   reason: string
+  contentVersionId?: number
+  contentHash?: string
+}
+
+export interface ContentVersionItem {
+  id: number
+  version: number
+  contentHash: string
+  createTime: string
+  current: boolean
+}
+
+export interface ContentReviewRecord {
+  id: number
+  contentVersionId: number
+  decision: string
+  comment?: string
+  reviewerId: number
+  createTime: string
 }
 
 export const getContentPackageList = () =>
@@ -51,3 +70,7 @@ export const exportContentPackageHtml = (id: number) =>
   request.post<string>({ url: marketingAppUrl(`/content-package/${id}/export/html`) })
 export const getContentGate = (id: number) =>
   request.get<GateResult>({ url: marketingAppUrl(`/gate/content-package/${id}`) })
+export const getContentVersions = (id: number) =>
+  request.get<ContentVersionItem[]>({ url: marketingAppUrl(`/content-package/${id}/versions`) })
+export const getContentReviews = (id: number) =>
+  request.get<ContentReviewRecord[]>({ url: marketingAppUrl(`/content-package/${id}/reviews`) })
