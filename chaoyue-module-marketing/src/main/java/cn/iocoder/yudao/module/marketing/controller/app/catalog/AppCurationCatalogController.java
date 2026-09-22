@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.marketing.dal.dataobject.curation.CurationBatchDO
 import cn.iocoder.yudao.module.marketing.dal.dataobject.curation.CurationEntryDO;
 import cn.iocoder.yudao.module.marketing.dal.mysql.curation.CurationBatchMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.curation.CurationEntryMapper;
+import cn.iocoder.yudao.module.marketing.service.curation.CurationRules;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +38,10 @@ public class AppCurationCatalogController {
                 .eq(CurationBatchDO::getChannel, channel)
                 .eq(CurationBatchDO::getStatus, "published")
                 .orderByDesc(CurationBatchDO::getPublishedAt));
-        return success(batches.stream().map(this::toPublishedBatch).toList());
+        return success(batches.stream()
+                .filter(batch -> CurationRules.visibleToTenant(batch.getStatus()))
+                .map(this::toPublishedBatch)
+                .toList());
     }
 
     private PublishedCurationBatchRespVO toPublishedBatch(CurationBatchDO batch) {

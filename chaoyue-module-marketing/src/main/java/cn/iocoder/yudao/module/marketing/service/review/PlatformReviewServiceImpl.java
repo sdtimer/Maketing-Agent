@@ -33,7 +33,7 @@ public class PlatformReviewServiceImpl implements PlatformReviewService {
         IngestionTaskDO task = taskMapper.selectById(taskId);
         if (task == null) throw exception(MARKETING_INGESTION_NOT_FOUND);
         Long reviewerId = SecurityFrameworkUtils.getLoginUserId();
-        if (String.valueOf(reviewerId).equals(task.getCreator())) throw exception(MARKETING_REVIEW_SELF_FORBIDDEN);
+        if (ReviewRules.isSelfReview(reviewerId, task.getCreator())) throw exception(MARKETING_REVIEW_SELF_FORBIDDEN);
         int updated = taskMapper.update(null, new LambdaUpdateWrapper<IngestionTaskDO>()
                 .eq(IngestionTaskDO::getId, taskId).eq(IngestionTaskDO::getStatus, "pending_review")
                 .eq(IngestionTaskDO::getVersion, reqVO.getExpectedVersionId())

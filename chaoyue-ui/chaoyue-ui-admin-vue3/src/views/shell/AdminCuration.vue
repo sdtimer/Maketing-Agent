@@ -58,9 +58,11 @@
         <el-table-column prop="sortOrder" label="排序" width="80" />
         <el-table-column prop="recommendText" label="推荐说明" />
         <el-table-column prop="reason" label="入选理由" />
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="220">
           <template #default="s">
-            <el-button text type="danger" :disabled="!entryForm.batchId" @click="removeEntry(s.row.id)">移除</el-button>
+            <el-button text :disabled="!canEditEntries || s.$index === 0" @click="move(s.$index, -1)">上移</el-button>
+            <el-button text :disabled="!canEditEntries || s.$index === entries.length - 1" @click="move(s.$index, 1)">下移</el-button>
+            <el-button text type="danger" :disabled="!canEditEntries" @click="removeEntry(s.row.id)">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -104,6 +106,7 @@ import {
   offlineCurationBatch,
   publishCurationBatch,
   removeCurationEntry,
+  sortCurationEntry,
   type CurationBatch,
   type CurationEntry
 } from '@/api/marketing/curation'
@@ -126,6 +129,7 @@ const entryForm = reactive({
   reason: ''
 })
 const drafts = computed(() => batches.value.filter((item) => item.status === 'draft'))
+const canEditEntries = computed(() => drafts.value.some((item) => item.id === entryForm.batchId))
 const approvedTasks = computed(() => tasks.value.filter((item) => item.status === 'approved'))
 
 const load = async () => {
@@ -185,6 +189,17 @@ const removeEntry = async (entryId: number) => {
   if (!entryForm.batchId) return
   await removeCurationEntry(entryForm.batchId, entryId)
   ElMessage.success('已从草稿批次移除')
+  await loadEntries()
+}
+
+const move = async (index: number, delta: number) => {
+  if (!entryForm.batchId) return
+  const current = entries.value[index]
+  const target = entries.value[index + delta]
+  if (!current || !target) return
+  const currentSort = current.sortOrder
+  await sortCurationEntry(entryForm.batchId, current.id, target.sortOrder)
+  await sortCurationEntry(entryForm.batchId, target.id, currentSort)
   await loadEntries()
 }
 

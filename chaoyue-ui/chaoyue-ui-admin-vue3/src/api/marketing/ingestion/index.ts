@@ -84,7 +84,7 @@ export const createImageIngestion = (data: ImageIngestionReqVO) => {
   return request.post<IngestionTaskVO>({ url: '/marketing/ingestion/recognize-image', data })
 }
 
-export const getIngestionTaskPage = (params: PageParam) => {
+export const getIngestionTaskPage = (params: PageParam & { status?: string; channel?: string }) => {
   return request.get<PageResult<IngestionTaskPageItem[]>>({ url: '/marketing/ingestion/page', params })
 }
 

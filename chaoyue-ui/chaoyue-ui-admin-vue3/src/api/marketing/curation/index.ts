@@ -6,5 +6,6 @@ export const createCurationBatch=(data:{market:string;channel:string;opsNote?:st
 export const getCurationEntries=(id:number)=>request.get<CurationEntry[]>({url:`/marketing/curation/batch/${id}/entries`})
 export const addCurationEntry=(id:number,data:{taskId:number;sortOrder?:number;recommendText?:string;reason?:string})=>request.post<boolean>({url:`/marketing/curation/batch/${id}/entries`,data})
 export const removeCurationEntry=(id:number,entryId:number)=>request.delete<boolean>({url:`/marketing/curation/batch/${id}/entries/${entryId}`})
+export const sortCurationEntry=(id:number,entryId:number,sortOrder:number)=>request.put<boolean>({url:`/marketing/curation/batch/${id}/entries/${entryId}/sort`,data:{sortOrder}})
 export const publishCurationBatch=(id:number)=>request.post<boolean>({url:`/marketing/curation/batch/${id}/publish`})
 export const offlineCurationBatch=(id:number)=>request.post<boolean>({url:`/marketing/curation/batch/${id}/offline`})

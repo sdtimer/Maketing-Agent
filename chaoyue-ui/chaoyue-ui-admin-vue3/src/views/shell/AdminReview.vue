@@ -10,8 +10,14 @@
     <el-alert type="warning" :closable="false" show-icon>
       审核通过只表示可进入精选编排，仍不会自动发布到租户端。
     </el-alert>
+    <el-radio-group v-model="status" class="status-filter" @change="load">
+      <el-radio-button label="pending_review">待审</el-radio-button>
+      <el-radio-button label="parsed_draft">草稿/打回</el-radio-button>
+      <el-radio-button label="approved">已通过</el-radio-button>
+      <el-radio-button label="">全部</el-radio-button>
+    </el-radio-group>
     <el-card shadow="never" class="card">
-      <el-table v-loading="loading" :data="pending" empty-text="暂无待审收录任务">
+      <el-table v-loading="loading" :data="tasks" empty-text="没有符合筛选条件的收录任务">
         <el-table-column prop="id" label="任务" width="90">
           <template #default="s">#{{ s.row.id }}</template>
         </el-table-column>
@@ -22,8 +28,8 @@
         <el-table-column prop="createTime" label="提交前创建时间" min-width="180" />
         <el-table-column label="操作" width="240">
           <template #default="s">
-            <el-button text type="success" @click="approve(s.row)">通过</el-button>
-            <el-button text type="danger" @click="openReject(s.row)">打回</el-button>
+            <el-button text type="success" :disabled="s.row.status !== 'pending_review'" @click="approve(s.row)">通过</el-button>
+            <el-button text type="danger" :disabled="s.row.status !== 'pending_review'" @click="openReject(s.row)">打回</el-button>
             <el-button text @click="openHistory(s.row.id)">记录</el-button>
           </template>
         </el-table-column>
@@ -55,7 +61,7 @@
   </section>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   approvePlatformReview,
@@ -77,12 +83,12 @@ const history = ref<PlatformReviewRecordVO[]>([])
 const reasonCode = ref('')
 const comment = ref('')
 const selected = ref<IngestionTaskPageItem>()
-const pending = computed(() => tasks.value.filter((item) => item.status === 'pending_review'))
+const status = ref('pending_review')
 
 const load = async () => {
   loading.value = true
   try {
-    tasks.value = (await getIngestionTaskPage({ pageNo: 1, pageSize: 100 })).list
+    tasks.value = (await getIngestionTaskPage({ pageNo: 1, pageSize: 100, status: status.value || undefined })).list
   } finally {
     loading.value = false
   }
@@ -147,6 +153,9 @@ onMounted(load)
 .review p {
   margin: 0;
   color: #6b7280;
+}
+.status-filter {
+  margin-top: 16px;
 }
 .card {
   margin-top: 18px;

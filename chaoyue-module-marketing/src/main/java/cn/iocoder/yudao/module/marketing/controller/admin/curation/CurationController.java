@@ -4,6 +4,8 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationBatchCreateReqVO;
 import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationEntryCreateReqVO;
 import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationEntryRespVO;
+import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationEntrySortReqVO;
+import cn.iocoder.yudao.module.marketing.service.curation.CurationRules;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.curation.CurationBatchDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.curation.CurationEntryDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.ingestion.IngestionTaskDO;
@@ -51,7 +53,7 @@ public class CurationController {
     @Transactional(rollbackFor = Exception.class)
     public CommonResult<Boolean> add(@PathVariable Long id, @Valid @RequestBody CurationEntryCreateReqVO reqVO) {
         CurationBatchDO batch = requireBatch(id);
-        if (!"draft".equals(batch.getStatus())) {
+        if (!CurationRules.canMutateEntries(batch.getStatus())) {
             throw exception(MARKETING_CURATION_STATUS_INVALID);
         }
         IngestionTaskDO task = taskMapper.selectById(reqVO.getTaskId());
@@ -82,7 +84,7 @@ public class CurationController {
     @PreAuthorize("@ss.hasPermission('marketing:platform:write')")
     public CommonResult<Boolean> removeEntry(@PathVariable Long id, @PathVariable Long entryId) {
         CurationBatchDO batch = requireBatch(id);
-        if (!"draft".equals(batch.getStatus())) {
+        if (!CurationRules.canMutateEntries(batch.getStatus())) {
             throw exception(MARKETING_CURATION_STATUS_INVALID);
         }
         CurationEntryDO entry = entryMapper.selectById(entryId);
@@ -93,17 +95,31 @@ public class CurationController {
         return success(true);
     }
 
+    @PutMapping("/batch/{id}/entries/{entryId}/sort")
+    @PreAuthorize("@ss.hasPermission('marketing:platform:write')")
+    public CommonResult<Boolean> sortEntry(@PathVariable Long id, @PathVariable Long entryId,
+                                           @Valid @RequestBody CurationEntrySortReqVO reqVO) {
+        CurationBatchDO batch = requireBatch(id);
+        if (!CurationRules.canMutateEntries(batch.getStatus())) {
+            throw exception(MARKETING_CURATION_STATUS_INVALID);
+        }
+        CurationEntryDO entry = entryMapper.selectById(entryId);
+        if (entry == null || !id.equals(entry.getBatchId())) {
+            throw exception(MARKETING_CURATION_BATCH_NOT_FOUND);
+        }
+        entry.setSortOrder(reqVO.getSortOrder());
+        entryMapper.updateById(entry);
+        return success(true);
+    }
+
     @PostMapping("/batch/{id}/publish")
     @PreAuthorize("@ss.hasPermission('marketing:platform:write')")
     public CommonResult<Boolean> publish(@PathVariable Long id) {
         CurationBatchDO batch = requireBatch(id);
-        if (!"draft".equals(batch.getStatus())) {
-            throw exception(MARKETING_CURATION_STATUS_INVALID);
-        }
         Long entryCount = entryMapper.selectCount(new LambdaQueryWrapperX<CurationEntryDO>()
                 .eq(CurationEntryDO::getBatchId, id));
-        if (entryCount == null || entryCount == 0) {
-            throw exception(MARKETING_CURATION_BATCH_EMPTY);
+        if (!CurationRules.canPublish(batch.getStatus(), entryCount == null ? 0 : entryCount)) {
+            throw exception(entryCount == null || entryCount == 0 ? MARKETING_CURATION_BATCH_EMPTY : MARKETING_CURATION_STATUS_INVALID);
         }
         batch.setStatus("published");
         batch.setPublishedAt(LocalDateTime.now());
@@ -115,7 +131,7 @@ public class CurationController {
     @PreAuthorize("@ss.hasPermission('marketing:platform:write')")
     public CommonResult<Boolean> offline(@PathVariable Long id) {
         CurationBatchDO batch = requireBatch(id);
-        if (!"published".equals(batch.getStatus())) {
+        if (!CurationRules.canOffline(batch.getStatus())) {
             throw exception(MARKETING_CURATION_STATUS_INVALID);
         }
         batch.setStatus("offline");
