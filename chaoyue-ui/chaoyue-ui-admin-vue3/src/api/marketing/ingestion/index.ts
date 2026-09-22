@@ -29,6 +29,14 @@ export interface IngestionTaskVO {
   status: string
 }
 
+export interface IngestionFieldChangeVO {
+  fieldName: string
+  oldValue?: string
+  newValue?: string
+  creator?: string
+  createTime: string
+}
+
 export interface IngestionDraftVO {
   taskId: number
   method: string
@@ -37,6 +45,17 @@ export interface IngestionDraftVO {
   status: string
   version: number
   fields: Record<string, any>
+  fieldChanges?: IngestionFieldChangeVO[]
+}
+
+export interface PlatformReviewRecordVO {
+  id: number
+  targetVersionId: number
+  decision: string
+  reasonCode?: string
+  comment?: string
+  reviewerId: number
+  createTime: string
 }
 
 export interface IngestionTaskPageItem {
@@ -77,3 +96,5 @@ export const approvePlatformReview = (id: number, expectedVersionId: number) =>
   request.post<boolean>({ url: `/marketing/platform/review/${id}/approve`, data: { expectedVersionId } })
 export const rejectPlatformReview = (id: number, expectedVersionId: number, reasonCode: string, comment: string) =>
   request.post<boolean>({ url: `/marketing/platform/review/${id}/reject`, data: { expectedVersionId, reasonCode, comment } })
+export const getPlatformReviewRecords = (id: number) =>
+  request.get<PlatformReviewRecordVO[]>({ url: `/marketing/platform/review/${id}` })

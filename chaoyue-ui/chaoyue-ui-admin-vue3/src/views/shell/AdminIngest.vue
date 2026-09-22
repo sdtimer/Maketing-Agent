@@ -83,6 +83,12 @@
           <el-form-item label="标题或账号名称"><el-input v-model="draft.fields.title" /></el-form-item>
           <el-form-item label="录入内容 / 简介 / 入选理由"><el-input v-model="draft.fields.content" type="textarea" :rows="7" /></el-form-item>
         </el-form>
+        <el-table v-if="draft.fieldChanges?.length" :data="draft.fieldChanges" size="small" class="draft-changes">
+          <el-table-column prop="fieldName" label="字段" width="140" />
+          <el-table-column prop="oldValue" label="原值" />
+          <el-table-column prop="newValue" label="新值" />
+          <el-table-column prop="createTime" label="时间" width="180" />
+        </el-table>
         <div class="draft-actions"><el-button :loading="draftSaving" @click="saveDraft">保存校对</el-button><el-button type="primary" :loading="draftSubmitting" @click="submitReview">提交待审</el-button></div>
       </template>
     </el-drawer>
@@ -140,5 +146,5 @@ onMounted(loadTasks)
 </script>
 
 <style scoped>
-.ingest-page { max-width: 1060px; padding: 8px 8px 32px; }.draft-meta { margin: 18px 0; }.draft-form { margin-top: 18px; }.draft-actions { display: flex; justify-content: flex-end; gap: 10px; }.ingest-task-card { margin-top: 18px; }.ingest-card__title :deep(.el-button) { margin-left: auto; }.ingest-page__header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }.ingest-page__header h1 { margin: 0 0 7px; font-size: 22px; color: #1f2937; }.ingest-page__header p { margin: 0; color: #6b7280; font-size: 14px; }.ingest-page__tabs :deep(.el-tabs__header) { margin-bottom: 18px; }.ingest-card { border-color: #e5e7eb; }.ingest-card__title { display: flex; gap: 10px; align-items: baseline; font-weight: 650; color: #1f2937; }.ingest-card__title small { color: #6b7280; font-weight: 400; }.ingest-alert { margin-bottom: 18px; }.ingest-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; max-width: 820px; }.ingest-form__grid :deep(.el-select) { width: 100%; }.ingest-form__full { grid-column: 1 / -1; }.ingest-form__actions { display: flex; gap: 10px; padding-top: 4px; }.ingest-page__result { margin-top: 18px; }@media (max-width: 720px) { .ingest-form__grid { grid-template-columns: 1fr; }.ingest-form__full { grid-column: auto; } }
+.ingest-page { max-width: 1060px; padding: 8px 8px 32px; }.draft-meta { margin: 18px 0; }.draft-form { margin-top: 18px; }.draft-changes { margin: 16px 0; }.draft-actions { display: flex; justify-content: flex-end; gap: 10px; }.ingest-task-card { margin-top: 18px; }.ingest-card__title :deep(.el-button) { margin-left: auto; }.ingest-page__header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }.ingest-page__header h1 { margin: 0 0 7px; font-size: 22px; color: #1f2937; }.ingest-page__header p { margin: 0; color: #6b7280; font-size: 14px; }.ingest-page__tabs :deep(.el-tabs__header) { margin-bottom: 18px; }.ingest-card { border-color: #e5e7eb; }.ingest-card__title { display: flex; gap: 10px; align-items: baseline; font-weight: 650; color: #1f2937; }.ingest-card__title small { color: #6b7280; font-weight: 400; }.ingest-alert { margin-bottom: 18px; }.ingest-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; max-width: 820px; }.ingest-form__grid :deep(.el-select) { width: 100%; }.ingest-form__full { grid-column: 1 / -1; }.ingest-form__actions { display: flex; gap: 10px; padding-top: 4px; }.ingest-page__result { margin-top: 18px; }@media (max-width: 720px) { .ingest-form__grid { grid-template-columns: 1fr; }.ingest-form__full { grid-column: auto; } }
 </style>

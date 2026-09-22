@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.marketing.controller.admin.ingestion.vo;
 
 import lombok.Data;
+
+import java.util.List;
 import java.util.Map;
 
 /** 平台端 - 待校对草稿详情。 */
@@ -13,4 +15,5 @@ public class IngestionDraftRespVO {
     private String status;
     private Integer version;
     private Map<String, Object> fields;
+    private List<IngestionFieldChangeRespVO> fieldChanges;
 }

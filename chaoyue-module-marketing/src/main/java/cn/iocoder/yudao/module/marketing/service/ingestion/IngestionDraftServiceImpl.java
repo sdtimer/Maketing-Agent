@@ -2,8 +2,10 @@ package cn.iocoder.yudao.module.marketing.service.ingestion;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.marketing.controller.admin.ingestion.vo.IngestionDraftRespVO;
 import cn.iocoder.yudao.module.marketing.controller.admin.ingestion.vo.IngestionDraftUpdateReqVO;
+import cn.iocoder.yudao.module.marketing.controller.admin.ingestion.vo.IngestionFieldChangeRespVO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.ingestion.ExtractionArtifactDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.ingestion.IngestionFieldChangeDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.ingestion.IngestionTaskDO;
@@ -93,6 +95,18 @@ public class IngestionDraftServiceImpl implements IngestionDraftService {
         resp.setTaskId(task.getId()); resp.setMethod(task.getMethod()); resp.setMarket(task.getMarket());
         resp.setChannel(task.getChannel()); resp.setStatus(task.getStatus()); resp.setVersion(task.getVersion());
         resp.setFields(draftFields(artifact));
+        resp.setFieldChanges(fieldChangeMapper.selectList(new LambdaQueryWrapperX<IngestionFieldChangeDO>()
+                        .eq(IngestionFieldChangeDO::getTaskId, task.getId())
+                        .orderByDesc(IngestionFieldChangeDO::getId))
+                .stream().map(change -> {
+                    IngestionFieldChangeRespVO item = new IngestionFieldChangeRespVO();
+                    item.setFieldName(change.getFieldName());
+                    item.setOldValue(change.getOldValue());
+                    item.setNewValue(change.getNewValue());
+                    item.setCreator(change.getCreator());
+                    item.setCreateTime(change.getCreateTime());
+                    return item;
+                }).toList());
         return resp;
     }
     private Map<String, Object> draftFields(ExtractionArtifactDO artifact) {
