@@ -52,6 +52,8 @@ INSERT INTO system_menu (
   (3029, '排版查询', 'marketing:tenant:task:query', 3, 1, 3009, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3030, '教程查询', 'marketing:tenant:guide:query', 3, 1, 3010, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3031, '设置查询', 'marketing:tenant:settings:query', 3, 1, 3011, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3032, '编辑正文', 'marketing:tenant:content:update', 3, 2, 3008, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3033, '内容终审', 'marketing:tenant:content:review', 3, 2, 3009, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3100, '平台端', '', 1, 2, 0, '/admin', 'ep:monitor', NULL, NULL, 0, b'0', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3101, '平台工作台', 'marketing:admin:home:query', 2, 1, 3100, 'home', 'ep:home-filled', 'shell/ShellPage', 'AdminHome', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3102, '收录工作台', 'marketing:admin:ingest:query', 2, 2, 3100, 'ingest', 'ep:upload', 'shell/ShellPage', 'AdminIngest', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
@@ -71,10 +73,10 @@ INSERT INTO system_menu (
   (3128, '公共提示词查询', 'marketing:admin:prompt:query', 3, 1, 3108, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0');
 
 INSERT INTO system_role_menu (role_id, menu_id, creator, create_time, updater, update_time, deleted, tenant_id)
-SELECT 2001, id, '1', NOW(), '1', NOW(), b'0', 1001 FROM system_menu WHERE id BETWEEN 3000 AND 3031;
+SELECT 2001, id, '1', NOW(), '1', NOW(), b'0', 1001 FROM system_menu WHERE id BETWEEN 3000 AND 3033;
 
 INSERT INTO system_role_menu (role_id, menu_id, creator, create_time, updater, update_time, deleted, tenant_id)
-SELECT 2002, id, '1', NOW(), '1', NOW(), b'0', 1002 FROM system_menu WHERE id BETWEEN 3000 AND 3031;
+SELECT 2002, id, '1', NOW(), '1', NOW(), b'0', 1002 FROM system_menu WHERE id BETWEEN 3000 AND 3033;
 
 INSERT INTO system_menu (
   id, name, permission, type, sort, parent_id, path, icon, component, component_name,

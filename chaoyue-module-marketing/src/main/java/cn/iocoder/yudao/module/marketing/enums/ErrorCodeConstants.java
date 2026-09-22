@@ -17,4 +17,10 @@ public interface ErrorCodeConstants {
     ErrorCode MARKETING_INGESTION_STATUS_INVALID = new ErrorCode(1_020_010_004, "当前任务状态不支持该操作");
     ErrorCode MARKETING_INGESTION_REQUIRED_FIELD_MISSING = new ErrorCode(1_020_010_005, "请补齐账号唯一标识或内容唯一定位后再提交审核");
     ErrorCode MARKETING_REVIEW_SELF_FORBIDDEN = new ErrorCode(1_020_040_001, "创建人不能审核自己的收录任务");
+
+    ErrorCode MARKETING_CONTENT_PACKAGE_NOT_FOUND = new ErrorCode(1_020_030_001, "内容包不存在");
+    ErrorCode MARKETING_CONTENT_VERSION_INVALID = new ErrorCode(1_020_030_002, "正文版本无效或不属于当前内容包");
+    ErrorCode MARKETING_CONTENT_REVIEW_STATUS_INVALID = new ErrorCode(1_020_040_002, "当前内容包状态不支持审核");
+    ErrorCode MARKETING_CONTENT_REVIEW_SELF_FORBIDDEN = new ErrorCode(1_020_040_003, "创建人不能审核自己的正文版本");
+    ErrorCode MARKETING_CONTENT_REJECT_COMMENT_REQUIRED = new ErrorCode(1_020_040_004, "打回必须填写说明");
 }

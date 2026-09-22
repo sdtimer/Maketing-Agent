@@ -33,15 +33,15 @@ const { t } = useI18n()
  }
  **/
 const remainingRouter: AppRouteRecordRaw[] = [
-  // 登录后的首屏兜底。动态 system_menu 路由尚未注册时，不能把 /admin/home、/tenant/home 落到 404。
+  // 登录后的首屏兜底。使用完整首页路径，避免与后端动态 /admin、/tenant 根菜单重复注册。
   {
-    path: '/admin',
+    path: '/admin/home',
     component: () => import('@/layouts/AdminLayout.vue'),
-    name: 'AdminShellFallback',
+    name: 'AdminHomeFallbackRoot',
     meta: { hidden: true },
     children: [
       {
-        path: 'home',
+        path: '',
         component: () => import('@/views/shell/AdminHome.vue'),
         name: 'AdminHomeFallback',
         meta: { title: '平台工作台', hidden: true }
@@ -49,13 +49,13 @@ const remainingRouter: AppRouteRecordRaw[] = [
     ]
   },
   {
-    path: '/tenant',
+    path: '/tenant/home',
     component: () => import('@/layouts/TenantLayout.vue'),
-    name: 'TenantShellFallback',
+    name: 'TenantHomeFallbackRoot',
     meta: { hidden: true },
     children: [
       {
-        path: 'home',
+        path: '',
         component: () => import('@/views/shell/TenantHome.vue'),
         name: 'TenantHomeFallback',
         meta: { title: '租户工作台', hidden: true }

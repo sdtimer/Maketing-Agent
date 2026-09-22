@@ -50,6 +50,10 @@ rebel.xml
 
 application-my.yaml
 
+# Local frontend runtime configuration. Keep the checked-in template only.
+**/.env.local
+!**/.env.local.example
+
 /yudao-ui-app/unpackage/
 .DS_Store
 **/.DS_Store

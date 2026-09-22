@@ -59,14 +59,8 @@ const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 
 const rootPath = computed(() => (props.mode === 'admin' ? '/admin' : '/tenant'))
-// remainingRouter 中的首屏兜底与后端动态根菜单同路径。优先选择子项更多的动态菜单；
-// 未加载动态菜单时才退回到静态工作台，避免侧栏丢失已配置功能。
-const root = computed(() => {
-  const candidates = permissionStore.getRouters.filter((item) => item.path === rootPath.value)
-  return candidates.reduce<AppRouteRecordRaw | undefined>((best, item) =>
-    !best || (item.children?.length || 0) > (best.children?.length || 0) ? item : best
-  , undefined)
-})
+// 动态 system_menu 是侧栏唯一来源；首页兜底路由使用完整路径，不参与根菜单选择。
+const root = computed(() => permissionStore.getRouters.find((item) => item.path === rootPath.value))
 const items = computed(() => root.value?.children || [])
 const systemMenu = computed(() =>
   props.mode === 'admin' ? permissionStore.getRouters.find((item) => item.path === '/system') : undefined
