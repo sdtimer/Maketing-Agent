@@ -40,7 +40,7 @@ INSERT INTO system_menu (
   (3006, '我的素材', 'marketing:tenant:library:query', 2, 3, 3003, 'library', 'ep:picture', 'shell/ShellPage', 'TenantLibrary', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3007, '提示词库', 'marketing:tenant:prompt:query', 2, 4, 3000, 'prompts', 'ep:edit', 'shell/ShellPage', 'TenantPrompts', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3008, '智能创作', 'marketing:tenant:create:query', 2, 5, 3000, 'create', 'ep:magic-stick', 'shell/TenantContentWorkspace', 'TenantCreate', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
-  (3009, '一键排版', 'marketing:tenant:task:query', 2, 6, 3000, 'tasks', 'ep:document', 'shell/ShellPage', 'TenantTasks', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3009, '内容审核', 'marketing:tenant:task:query', 2, 6, 3000, 'tasks', 'ep:document', 'shell/TenantContentReview', 'TenantTasks', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3010, '使用教程', 'marketing:tenant:guide:query', 2, 7, 3000, 'guide', 'ep:reading', 'shell/ShellPage', 'TenantGuide', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3011, '设置', 'marketing:tenant:settings:query', 2, 8, 3000, 'settings', 'ep:setting', 'shell/ShellPage', 'TenantSettings', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3021, '工作台查询', 'marketing:tenant:home:query', 3, 1, 3001, '', '#', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
