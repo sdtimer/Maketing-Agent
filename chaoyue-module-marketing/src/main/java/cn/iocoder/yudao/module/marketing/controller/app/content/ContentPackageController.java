@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentVersionDO
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.CreationTaskDO;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ChannelPackageMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.CreationTaskMapper;
+import cn.iocoder.yudao.module.marketing.service.content.ContentDeliveryService;
 import cn.iocoder.yudao.module.marketing.service.content.ContentReviewService;
 import cn.iocoder.yudao.module.marketing.service.content.ContentVersionService;
 import jakarta.annotation.Resource;
@@ -27,6 +28,7 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 public class ContentPackageController {
     @Resource private ContentVersionService versionService;
     @Resource private ContentReviewService reviewService;
+    @Resource private ContentDeliveryService deliveryService;
     @Resource private CreationTaskMapper creationTaskMapper;
     @Resource private ChannelPackageMapper packageMapper;
 
@@ -63,6 +65,23 @@ public class ContentPackageController {
     public CommonResult<ContentVersionSaveRespVO> save(@PathVariable Long id,
                                                        @Valid @RequestBody ContentVersionSaveReqVO reqVO) {
         return success(toVersionResp(versionService.saveNewVersion(id, reqVO.getContent())));
+    }
+
+    @PostMapping("/{id}/copy")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:content:copy')")
+    public CommonResult<ContentCopyRespVO> copy(@PathVariable Long id) {
+        ContentVersionDO version = deliveryService.copyApprovedContent(id);
+        ContentCopyRespVO respVO = new ContentCopyRespVO();
+        respVO.setContentVersionId(version.getId());
+        respVO.setContentHash(version.getContentHash());
+        respVO.setContent(version.getContent());
+        return success(respVO);
+    }
+
+    @PostMapping(value = "/{id}/export/html", produces = "text/html;charset=UTF-8")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:content:export')")
+    public String exportHtml(@PathVariable Long id) {
+        return deliveryService.exportApprovedHtml(id);
     }
 
     @PostMapping("/{id}/approve")
