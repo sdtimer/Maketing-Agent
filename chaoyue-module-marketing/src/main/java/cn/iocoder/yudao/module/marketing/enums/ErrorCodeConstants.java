@@ -20,6 +20,8 @@ public interface ErrorCodeConstants {
     ErrorCode MARKETING_CURATION_BATCH_NOT_FOUND = new ErrorCode(1_020_020_001, "精选批次不存在");
     ErrorCode MARKETING_CURATION_BATCH_EMPTY = new ErrorCode(1_020_020_002, "空批次不能发布，请先加入审核通过的条目");
     ErrorCode MARKETING_CURATION_STATUS_INVALID = new ErrorCode(1_020_020_003, "当前批次状态不支持该操作");
+    ErrorCode MARKETING_PRODUCT_NOT_FOUND = new ErrorCode(1_020_011_001, "产品资产不存在");
+    ErrorCode MARKETING_ASSET_UNAUTHORIZED = new ErrorCode(1_020_011_002, "未授权素材不能入库，更不能用于创作");
 
     ErrorCode MARKETING_CONTENT_PACKAGE_NOT_FOUND = new ErrorCode(1_020_030_001, "内容包不存在");
     ErrorCode MARKETING_CONTENT_VERSION_INVALID = new ErrorCode(1_020_030_002, "正文版本无效或不属于当前内容包");

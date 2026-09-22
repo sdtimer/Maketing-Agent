@@ -37,7 +37,7 @@ INSERT INTO system_menu (
   (3003, '爆款素材库', '', 1, 3, 3000, 'catalog', 'ep:collection', NULL, NULL, 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3004, '国内渠道', 'marketing:tenant:catalog:query', 2, 1, 3003, 'domestic', 'ep:chat-dot-round', 'shell/TenantCatalog', 'TenantDomestic', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3005, '出海渠道', 'marketing:tenant:catalog:query', 2, 2, 3003, 'overseas', 'ep:ship', 'shell/TenantCatalog', 'TenantOverseas', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
-  (3006, '我的素材', 'marketing:tenant:library:query', 2, 3, 3003, 'library', 'ep:picture', 'shell/ShellPage', 'TenantLibrary', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
+  (3006, '我的素材', 'marketing:tenant:library:query', 2, 3, 3003, 'library', 'ep:picture', 'shell/TenantLibrary', 'TenantLibrary', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3007, '提示词库', 'marketing:tenant:prompt:query', 2, 4, 3000, 'prompts', 'ep:edit', 'shell/ShellPage', 'TenantPrompts', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3008, '智能创作', 'marketing:tenant:create:query', 2, 5, 3000, 'create', 'ep:magic-stick', 'shell/TenantContentWorkspace', 'TenantCreate', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
   (3009, '内容审核', 'marketing:tenant:task:query', 2, 6, 3000, 'tasks', 'ep:document', 'shell/TenantContentReview', 'TenantTasks', 0, b'1', b'1', b'1', '1', NOW(), '1', NOW(), b'0'),
