@@ -54,6 +54,7 @@ public class IngestionTaskServiceImpl implements IngestionTaskService {
             resp.setChannel(task.getChannel());
             resp.setStatus(task.getStatus());
             resp.setAttempt(task.getAttempt());
+            resp.setVersion(task.getVersion());
             resp.setCreateTime(task.getCreateTime());
             return resp;
         }).toList();
