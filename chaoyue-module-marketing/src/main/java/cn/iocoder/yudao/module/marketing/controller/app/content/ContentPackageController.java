@@ -8,10 +8,13 @@ import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ChannelPackageDO
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentReviewDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentVersionDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.content.CreationTaskDO;
+import cn.iocoder.yudao.module.marketing.dal.dataobject.content.TaskStatusEventDO;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ChannelPackageMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentReviewMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentVersionMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.CreationTaskMapper;
+import cn.iocoder.yudao.module.marketing.dal.mysql.content.TaskStatusEventMapper;
+import cn.iocoder.yudao.module.marketing.service.task.TaskPrecheckService;
 import cn.iocoder.yudao.module.marketing.service.content.ContentDeliveryService;
 import cn.iocoder.yudao.module.marketing.service.content.ContentReviewService;
 import cn.iocoder.yudao.module.marketing.service.content.ContentVersionService;
@@ -39,6 +42,8 @@ public class ContentPackageController {
     @Resource private ChannelPackageMapper packageMapper;
     @Resource private ContentVersionMapper versionMapper;
     @Resource private ContentReviewMapper reviewMapper;
+    @Resource private TaskStatusEventMapper taskEventMapper;
+    @Resource private TaskPrecheckService taskPrecheckService;
 
     @GetMapping("/list")
     @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
@@ -56,6 +61,11 @@ public class ContentPackageController {
         respVO.setChannel(contentPackage.getChannel());
         respVO.setStatus(contentPackage.getStatus());
         respVO.setCurrentVersionId(contentPackage.getCurrentVersionId());
+        CreationTaskDO task = requireTask(contentPackage.getTaskId());
+        respVO.setTaskStatus(task.getStatus());
+        respVO.setFactSnapshot(task.getFactSnapshot());
+        respVO.setRequiredFactFields(cn.iocoder.yudao.framework.common.util.json.JsonUtils.parseArray(
+                task.getRequiredFactFields(), String.class));
         if (contentPackage.getCurrentVersionId() != null) {
             ContentVersionDO version = versionMapper.selectById(contentPackage.getCurrentVersionId());
             if (version != null) {
@@ -75,7 +85,9 @@ public class ContentPackageController {
         task.setTitle(reqVO.getTitle());
         task.setMarket(reqVO.getMarket());
         task.setFactSnapshot(reqVO.getFactSnapshot());
-        task.setStatus("created");
+        task.setRequiredFactFields(cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString(
+                reqVO.getRequiredFactFields() == null ? List.of() : reqVO.getRequiredFactFields()));
+        task.setStatus("prechecking");
         task.setTenantId(TenantContextHolder.getTenantId());
         creationTaskMapper.insert(task);
 
@@ -86,7 +98,11 @@ public class ContentPackageController {
         contentPackage.setTenantId(TenantContextHolder.getTenantId());
         packageMapper.insert(contentPackage);
         ContentVersionDO version = versionService.saveNewVersion(contentPackage.getId(), reqVO.getContent());
-        return success(toVersionResp(version));
+        ContentTaskPrecheckRespVO precheck = taskPrecheckService.initialCheck(task, contentPackage, reqVO.getRequiredFactFields());
+        ContentVersionSaveRespVO respVO = toVersionResp(version);
+        respVO.setTaskStatus(precheck.getStatus());
+        respVO.setMissingFactFields(precheck.getMissingFields());
+        return success(respVO);
     }
 
     @PutMapping("/{id}/content")
@@ -94,6 +110,41 @@ public class ContentPackageController {
     public CommonResult<ContentVersionSaveRespVO> save(@PathVariable Long id,
                                                        @Valid @RequestBody ContentVersionSaveReqVO reqVO) {
         return success(toVersionResp(versionService.saveNewVersion(id, reqVO.getContent())));
+    }
+
+    @PostMapping("/{id}/precheck")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:content:update')")
+    public CommonResult<ContentTaskPrecheckRespVO> recheck(@PathVariable Long id,
+                                                            @Valid @RequestBody ContentTaskPrecheckReqVO reqVO) {
+        ChannelPackageDO contentPackage = requirePackage(id);
+        CreationTaskDO task = requireTask(contentPackage.getTaskId());
+        return success(taskPrecheckService.recheck(task, contentPackage, reqVO.getFactSnapshot(), reqVO.getRequiredFactFields()));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:content:update')")
+    public CommonResult<Boolean> cancel(@PathVariable Long id) {
+        ChannelPackageDO contentPackage = requirePackage(id);
+        taskPrecheckService.cancel(requireTask(contentPackage.getTaskId()), contentPackage);
+        return success(true);
+    }
+
+    @GetMapping("/{id}/task-events")
+    @PreAuthorize("@ss.hasPermission('marketing:tenant:create:query')")
+    public CommonResult<List<ContentTaskEventRespVO>> taskEvents(@PathVariable Long id) {
+        ChannelPackageDO contentPackage = requirePackage(id);
+        return success(taskEventMapper.selectList(new LambdaQueryWrapperX<TaskStatusEventDO>()
+                        .eq(TaskStatusEventDO::getTaskId, contentPackage.getTaskId())
+                        .orderByAsc(TaskStatusEventDO::getId))
+                .stream().map(event -> {
+                    ContentTaskEventRespVO item = new ContentTaskEventRespVO();
+                    item.setId(event.getId());
+                    item.setFromStatus(event.getFromStatus());
+                    item.setToStatus(event.getToStatus());
+                    item.setDetail(event.getDetail());
+                    item.setCreateTime(event.getCreateTime());
+                    return item;
+                }).toList());
     }
 
     @GetMapping("/{id}/versions")
@@ -162,6 +213,14 @@ public class ContentPackageController {
     public CommonResult<Boolean> reject(@PathVariable Long id, @Valid @RequestBody ContentReviewRejectReqVO reqVO) {
         reviewService.reject(id, reqVO.getVersionId(), reqVO.getComment());
         return success(true);
+    }
+
+    private CreationTaskDO requireTask(Long id) {
+        CreationTaskDO task = creationTaskMapper.selectById(id);
+        if (task == null) {
+            throw exception(MARKETING_CONTENT_PACKAGE_NOT_FOUND);
+        }
+        return task;
     }
 
     private ChannelPackageDO requirePackage(Long id) {

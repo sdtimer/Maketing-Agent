@@ -28,4 +28,5 @@ public interface ErrorCodeConstants {
     ErrorCode MARKETING_CONTENT_REVIEW_STATUS_INVALID = new ErrorCode(1_020_040_002, "当前内容包状态不支持审核");
     ErrorCode MARKETING_CONTENT_REVIEW_SELF_FORBIDDEN = new ErrorCode(1_020_040_003, "创建人不能审核自己的正文版本");
     ErrorCode MARKETING_CONTENT_REJECT_COMMENT_REQUIRED = new ErrorCode(1_020_040_004, "打回必须填写说明");
+    ErrorCode MARKETING_TASK_STATUS_INVALID = new ErrorCode(1_020_030_003, "当前推广任务状态不支持该操作");
 }

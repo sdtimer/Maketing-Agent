@@ -8,6 +8,8 @@ import cn.iocoder.yudao.module.marketing.dal.dataobject.content.ContentVersionDO
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ChannelPackageMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentReviewMapper;
 import cn.iocoder.yudao.module.marketing.dal.mysql.content.ContentVersionMapper;
+import cn.iocoder.yudao.module.marketing.dal.mysql.content.CreationTaskMapper;
+import cn.iocoder.yudao.module.marketing.service.task.TaskStateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ public class ContentReviewServiceImpl implements ContentReviewService {
     private final ChannelPackageMapper packageMapper;
     private final ContentVersionMapper versionMapper;
     private final ContentReviewMapper reviewMapper;
+    private final CreationTaskMapper taskMapper;
+    private final TaskStateService taskStateService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -64,5 +68,12 @@ public class ContentReviewServiceImpl implements ContentReviewService {
         reviewMapper.insert(review);
         contentPackage.setStatus("approved".equals(decision) ? "approved" : "draft");
         packageMapper.updateById(contentPackage);
+        // 仅在真实审核通过后记录部分成功；当前没有 AI worker，不产生伪造的生成成功事件。
+        if ("approved".equals(decision)) {
+            cn.iocoder.yudao.module.marketing.dal.dataobject.content.CreationTaskDO task = taskMapper.selectById(contentPackage.getTaskId());
+            if (task != null && "pending_review".equals(task.getStatus())) {
+                taskStateService.transition(task, "partial_success", "一个渠道正文已通过人工终审");
+            }
+        }
     }
 }

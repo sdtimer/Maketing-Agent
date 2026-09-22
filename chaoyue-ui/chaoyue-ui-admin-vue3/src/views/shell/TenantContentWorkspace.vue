@@ -26,13 +26,22 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item label="事实快照 JSON">
-            <el-input v-model="form.factSnapshot" :disabled="Boolean(editingId)" />
+            <el-input v-model="form.factSnapshot" />
+          </el-form-item>
+          <el-form-item label="本任务必填事实字段">
+            <el-input v-model="form.requiredFacts" placeholder="例如：moq, price；仅检查这里显式填写的字段" />
           </el-form-item>
         </div>
         <el-form-item label="正文">
           <el-input v-model="form.content" type="textarea" :rows="8" maxlength="200000" show-word-limit />
         </el-form-item>
-        <el-button type="primary" :loading="saving" @click="submit">{{ editingId ? '保存新版本并重审' : '保存并提交终审' }}</el-button>
+        <el-alert v-if="precheckMessage" class="precheck" :type="precheckMissing.length ? 'warning' : 'success'" :closable="false" show-icon>
+          <template #title>{{ precheckMessage }}</template>
+          <template v-if="precheckMissing.length">待补：{{ precheckMissing.join('、') }}</template>
+        </el-alert>
+        <el-button type="primary" :loading="saving" @click="submit">{{ editingId ? '保存正文（不会绕过预检）' : '保存并进行事实预检' }}</el-button>
+        <el-button v-if="editingId && editingStatus === 'precheck_failed'" type="warning" :loading="saving" @click="recheck">更新事实并重新预检</el-button>
+        <el-button v-if="editingId && editingStatus !== 'cancelled'" type="danger" plain @click="cancel">取消任务</el-button>
         <el-button v-if="editingId" @click="reset">取消编辑</el-button>
       </el-form>
     </el-card>
@@ -66,9 +75,11 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
+  cancelContentPackage,
   createContentPackage,
   getContentPackage,
   getContentPackageList,
+  recheckContentPackage,
   saveContentVersion,
   type ContentPackage
 } from '@/api/marketing/content'
@@ -79,7 +90,11 @@ const loading = ref(false)
 const saving = ref(false)
 const editingId = ref<number>()
 const packages = ref<ContentPackage[]>([])
-const form = reactive({ title: '', market: 'domestic', channel: 'wechat', content: '', factSnapshot: '{}' })
+const form = reactive({ title: '', market: 'domestic', channel: 'wechat', content: '', factSnapshot: '{}', requiredFacts: '' })
+const editingStatus = ref('')
+const precheckMessage = ref('')
+const precheckMissing = ref<string[]>([])
+const requiredFactFields = () => form.requiredFacts.split(',').map((field) => field.trim()).filter(Boolean)
 
 const load = async () => {
   loading.value = true
@@ -95,6 +110,10 @@ const reset = () => {
   form.title = ''
   form.content = ''
   form.factSnapshot = '{}'
+  form.requiredFacts = ''
+  editingStatus.value = ''
+  precheckMessage.value = ''
+  precheckMissing.value = []
 }
 
 const edit = async (id: number) => {
@@ -102,6 +121,12 @@ const edit = async (id: number) => {
   editingId.value = id
   form.content = detail.content || ''
   form.channel = detail.channel
+  form.market = 'domestic'
+  form.factSnapshot = detail.factSnapshot || '{}'
+  form.requiredFacts = (detail.requiredFactFields || []).join(', ')
+  editingStatus.value = detail.taskStatus || detail.status
+  precheckMessage.value = editingStatus.value === 'precheck_failed' ? '事实不足，任务已停止；系统没有调用 AI，也不会补写缺失事实。' : ''
+  precheckMissing.value = []
 }
 
 const submit = async () => {
@@ -115,14 +140,46 @@ const submit = async () => {
       await saveContentVersion(editingId.value, form.content)
       ElMessage.success('已保存新版本，需重新终审')
     } else {
-      await createContentPackage({ ...form })
-      ElMessage.success('已创建内容包，等待非创建人终审')
+      const result = await createContentPackage({
+        ...form,
+        requiredFactFields: requiredFactFields()
+      })
+      if (result.taskStatus === 'precheck_failed') {
+        ElMessage.warning(`事实预检未通过：${(result.missingFactFields || []).join('、')}`)
+      } else {
+        ElMessage.success('事实预检通过，等待非创建人终审；当前未调用 AI 生成')
+      }
     }
     reset()
     await load()
   } finally {
     saving.value = false
   }
+}
+
+const recheck = async () => {
+  if (!editingId.value) return
+  saving.value = true
+  try {
+    const result = await recheckContentPackage(editingId.value, {
+      factSnapshot: form.factSnapshot,
+      requiredFactFields: requiredFactFields()
+    })
+    editingStatus.value = result.status
+    precheckMessage.value = result.message
+    precheckMissing.value = result.missingFields || []
+    if (result.status === 'pending_review') ElMessage.success('事实预检通过，已进入人工终审')
+  } finally {
+    saving.value = false
+  }
+}
+
+const cancel = async () => {
+  if (!editingId.value) return
+  await cancelContentPackage(editingId.value)
+  ElMessage.success('任务已取消；任何迟到异步结果都会被丢弃')
+  reset()
+  await load()
 }
 
 onMounted(load)
@@ -153,6 +210,9 @@ onMounted(load)
 }
 .grid :deep(.el-select) {
   width: 100%;
+}
+.precheck {
+  margin: 6px 0 16px;
 }
 .list {
   margin-top: 18px;

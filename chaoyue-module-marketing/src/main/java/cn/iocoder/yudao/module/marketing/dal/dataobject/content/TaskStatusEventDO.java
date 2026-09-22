@@ -7,16 +7,16 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@TableName("marketing_creation_task")
+/** 推广任务状态事件；保留预检失败的真实缺失项，不以模型推测补写。 */
+@TableName("marketing_task_status_event")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CreationTaskDO extends BaseDO {
+public class TaskStatusEventDO extends BaseDO {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String title;
-    private String status;
-    private String market;
-    private String factSnapshot;
-    private String requiredFactFields;
+    private Long taskId;
+    private String fromStatus;
+    private String toStatus;
+    private String detail;
     private Long tenantId;
 }

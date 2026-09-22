@@ -44,7 +44,10 @@ public class ContentVersionServiceImpl implements ContentVersionService {
         versionMapper.insert(version);
 
         contentPackage.setCurrentVersionId(version.getId());
-        contentPackage.setStatus("pending_review");
+        // 预检失败或已取消不能仅靠修改正文绕过事实闸门。
+        if (!"precheck_failed".equals(contentPackage.getStatus()) && !"cancelled".equals(contentPackage.getStatus())) {
+            contentPackage.setStatus("pending_review");
+        }
         packageMapper.updateById(contentPackage);
         return version;
     }

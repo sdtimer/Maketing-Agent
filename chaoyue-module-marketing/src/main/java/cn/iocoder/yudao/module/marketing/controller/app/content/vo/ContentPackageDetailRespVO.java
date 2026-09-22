@@ -12,4 +12,7 @@ public class ContentPackageDetailRespVO {
     private Integer currentVersion;
     private String contentHash;
     private String content;
+    private String taskStatus;
+    private String factSnapshot;
+    private java.util.List<String> requiredFactFields;
 }

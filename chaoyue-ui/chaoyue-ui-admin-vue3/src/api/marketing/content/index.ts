@@ -14,6 +14,16 @@ export interface ContentPackageDetail extends ContentPackage {
   currentVersion?: number
   contentHash?: string
   content?: string
+  taskStatus?: string
+  factSnapshot?: string
+  requiredFactFields?: string[]
+}
+
+export interface ContentPrecheckResult {
+  taskId: number
+  status: string
+  missingFields: string[]
+  message: string
 }
 
 export interface GateResult {
@@ -52,7 +62,8 @@ export const createContentPackage = (data: {
   channel: string
   content: string
   factSnapshot?: string
-}) => request.post<{ contentVersionId: number; contentHash: string }>({ url: marketingAppUrl('/content-package'), data })
+  requiredFactFields?: string[]
+}) => request.post<{ contentVersionId: number; contentHash: string; taskStatus: string; missingFactFields: string[] }>({ url: marketingAppUrl('/content-package'), data })
 export const saveContentVersion = (id: number, content: string) =>
   request.put<{ contentVersionId: number; contentHash: string }>({
     url: marketingAppUrl(`/content-package/${id}/content`),
@@ -72,5 +83,9 @@ export const getContentGate = (id: number) =>
   request.get<GateResult>({ url: marketingAppUrl(`/gate/content-package/${id}`) })
 export const getContentVersions = (id: number) =>
   request.get<ContentVersionItem[]>({ url: marketingAppUrl(`/content-package/${id}/versions`) })
+export const recheckContentPackage = (id: number, data: { factSnapshot: string; requiredFactFields: string[] }) =>
+  request.post<ContentPrecheckResult>({ url: marketingAppUrl(`/content-package/${id}/precheck`), data })
+export const cancelContentPackage = (id: number) =>
+  request.post<boolean>({ url: marketingAppUrl(`/content-package/${id}/cancel`) })
 export const getContentReviews = (id: number) =>
   request.get<ContentReviewRecord[]>({ url: marketingAppUrl(`/content-package/${id}/reviews`) })

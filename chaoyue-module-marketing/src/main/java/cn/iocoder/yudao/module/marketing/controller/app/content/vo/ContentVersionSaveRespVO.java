@@ -6,4 +6,6 @@ import lombok.Data;
 public class ContentVersionSaveRespVO {
     private Long contentVersionId;
     private String contentHash;
+    private String taskStatus;
+    private java.util.List<String> missingFactFields;
 }
