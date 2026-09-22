@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.marketing.controller.admin.curation;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationBatchCreateReqVO;
 import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationEntryCreateReqVO;
+import cn.iocoder.yudao.module.marketing.controller.admin.curation.vo.CurationEntryRespVO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.curation.CurationBatchDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.curation.CurationEntryDO;
 import cn.iocoder.yudao.module.marketing.dal.dataobject.ingestion.IngestionTaskDO;
@@ -56,6 +57,39 @@ public class CurationController {
         IngestionTaskDO task = taskMapper.selectById(reqVO.getTaskId());
         if (task == null || !"approved".equals(task.getStatus())) throw exception(MARKETING_INGESTION_NOT_FOUND);
         CurationEntryDO entry = new CurationEntryDO(); entry.setBatchId(id); entry.setTaskId(task.getId()); entry.setSortOrder(reqVO.getSortOrder()); entry.setRecommendText(reqVO.getRecommendText()); entry.setReason(reqVO.getReason()); entryMapper.insert(entry);
+        return success(true);
+    }
+
+    @GetMapping("/batch/{id}/entries")
+    @PreAuthorize("@ss.hasPermission('marketing:admin:batch:query')")
+    public CommonResult<List<CurationEntryRespVO>> listEntries(@PathVariable Long id) {
+        requireBatch(id);
+        return success(entryMapper.selectList(new LambdaQueryWrapperX<CurationEntryDO>()
+                        .eq(CurationEntryDO::getBatchId, id)
+                        .orderByAsc(CurationEntryDO::getSortOrder))
+                .stream().map(entry -> {
+                    CurationEntryRespVO item = new CurationEntryRespVO();
+                    item.setId(entry.getId());
+                    item.setTaskId(entry.getTaskId());
+                    item.setSortOrder(entry.getSortOrder());
+                    item.setRecommendText(entry.getRecommendText());
+                    item.setReason(entry.getReason());
+                    return item;
+                }).toList());
+    }
+
+    @DeleteMapping("/batch/{id}/entries/{entryId}")
+    @PreAuthorize("@ss.hasPermission('marketing:platform:write')")
+    public CommonResult<Boolean> removeEntry(@PathVariable Long id, @PathVariable Long entryId) {
+        CurationBatchDO batch = requireBatch(id);
+        if (!"draft".equals(batch.getStatus())) {
+            throw exception(MARKETING_CURATION_STATUS_INVALID);
+        }
+        CurationEntryDO entry = entryMapper.selectById(entryId);
+        if (entry == null || !id.equals(entry.getBatchId())) {
+            throw exception(MARKETING_CURATION_BATCH_NOT_FOUND);
+        }
+        entryMapper.deleteById(entryId);
         return success(true);
     }
 
